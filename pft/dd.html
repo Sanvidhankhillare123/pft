@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finance Tracker</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .container {
+            margin-top: 30px;
+        }
+        .card {
+            margin-bottom: 20px;
+        }
+        .table th, .table td {
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2 class="text-center mb-4">Finance Tracker</h2>
+    <div class="card">
+        <div class="card-body">
+            <form id="recordForm">
+                <div class="row">
+                    <div class="col-md-3">
+                        <input type="text" class="form-control" placeholder="Name" id="name" required>
+                    </div>
+                    <div class="col-md-2">
+                        <input type="date" class="form-control" id="date" required>
+                    </div>
+                    <div class="col-md-2">
+                        <input type="number" step="0.01" class="form-control" placeholder="Amount" id="amount" required>
+                    </div>
+                    <div class="col-md-2">
+                        <select class="form-select" id="type">
+                            <option value="" selected disabled>Type</option>
+                            <option value="Income">Income</option>
+                            <option value="Food">Food</option>
+                            <option value="Travel">Travel</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-primary w-100">Add Record</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-header bg-success text-white">
+            Income Records
+        </div>
+        <div class="card-body">
+            <table class="table table-bordered">
+                <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Date</th>
+                    <th>Amount</th>
+                </tr>
+                </thead>
+                <tbody id="incomeTable"></tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-header bg-danger text-white">
+            Expense Records
+        </div>
+        <div class="card-body">
+            <table class="table table-bordered">
+                <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Amount</th>
+                </tr>
+                </thead>
+                <tbody id="expenseTable"></tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card text-center">
+        <div class="card-body">
+            <h4>Net Balance: <span id="netBalance">0.00</span></h4>
+        </div>
+    </div>
+</div>
+
+<script>
+    const incomeTable = document.getElementById("incomeTable");
+    const expenseTable = document.getElementById("expenseTable");
+    const netBalance = document.getElementById("netBalance");
+
+    let incomeList = [];
+    let expenseList = [];
+
+    document.getElementById("recordForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        const name = document.getElementById("name").value;
+        const date = document.getElementById("date").value;
+        const amount = parseFloat(document.getElementById("amount").value);
+        const type = document.getElementById("type").value;
+
+        if (type === "Income") {
+            incomeList.push({ name, date, amount });
+        } else {
+            expenseList.push({ name, date, type, amount });
+        }
+
+        updateTables();
+        document.getElementById("recordForm").reset();
+    });
+
+    function updateTables() {
+        incomeTable.innerHTML = "";
+        expenseTable.innerHTML = "";
+        let totalIncome = 0, totalExpense = 0;
+
+        incomeList.forEach((record) => {
+            incomeTable.innerHTML += `<tr><td>${record.name}</td><td>${record.date}</td><td>${record.amount.toFixed(2)}</td></tr>`;
+            totalIncome += record.amount;
+        });
+
+        expenseList.forEach((record) => {
+            expenseTable.innerHTML += `<tr><td>${record.name}</td><td>${record.date}</td><td>${record.type}</td><td>${record.amount.toFixed(2)}</td></tr>`;
+            totalExpense += record.amount;
+        });
+
+        netBalance.innerText = (totalIncome - totalExpense).toFixed(2);
+    }
+</script>
+</body>
+</html>
