@@ -1,142 +1,91 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Finance Tracker</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            background-color: #f8f9fa;
-        }
-        .container {
-            margin-top: 30px;
-        }
-        .card {
-            margin-bottom: 20px;
-        }
-        .table th, .table td {
-            vertical-align: middle;
-        }
-    </style>
-</head>
-<body>
-<div class="container">
-    <h2 class="text-center mb-4">Finance Tracker</h2>
-    <div class="card">
-        <div class="card-body">
-            <form id="recordForm">
-                <div class="row">
-                    <div class="col-md-3">
-                        <input type="text" class="form-control" placeholder="Name" id="name" required>
-                    </div>
-                    <div class="col-md-2">
-                        <input type="date" class="form-control" id="date" required>
-                    </div>
-                    <div class="col-md-2">
-                        <input type="number" step="0.01" class="form-control" placeholder="Amount" id="amount" required>
-                    </div>
-                    <div class="col-md-2">
-                        <select class="form-select" id="type">
-                            <option value="" selected disabled>Type</option>
-                            <option value="Income">Income</option>
-                            <option value="Food">Food</option>
-                            <option value="Travel">Travel</option>
-                            <option value="Other">Other</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <button type="submit" class="btn btn-primary w-100">Add Record</button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
-    <div class="card">
-        <div class="card-header bg-success text-white">
-            Income Records
-        </div>
-        <div class="card-body">
-            <table class="table table-bordered">
-                <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Date</th>
-                    <th>Amount</th>
+import React, { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+
+const App = () => {
+  const [records, setRecords] = useState([]);
+  const [form, setForm] = useState({ name: "", date: "", amount: "", type: "", category: "Income" });
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = () => {
+    if (!form.name || !form.date || !form.amount || (form.category === "Expense" && !form.type)) return;
+    const newRecord = { ...form, amount: parseFloat(form.amount) };
+    setRecords([...records, newRecord]);
+    setForm({ name: "", date: "", amount: "", type: "", category: form.category });
+  };
+
+  const totalIncome = records.filter(r => r.category === "Income").reduce((sum, r) => sum + r.amount, 0);
+  const totalExpense = records.filter(r => r.category === "Expense").reduce((sum, r) => sum + r.amount, 0);
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-6">
+      <h1 className="text-3xl font-bold mb-6">Finance Tracker</h1>
+
+      <Card className="mb-6 max-w-xl">
+        <CardContent className="space-y-4">
+          <div className="flex space-x-4">
+            <Input name="name" placeholder="Name" value={form.name} onChange={handleChange} />
+            <Input name="date" placeholder="Date (DD/MM/YYYY)" value={form.date} onChange={handleChange} />
+          </div>
+          <div className="flex space-x-4">
+            <Input name="amount" type="number" placeholder="Amount" value={form.amount} onChange={handleChange} />
+            <select name="category" className="border rounded p-2" value={form.category} onChange={handleChange}>
+              <option>Income</option>
+              <option>Expense</option>
+            </select>
+            {form.category === "Expense" && (
+              <Input name="type" placeholder="Expense Type" value={form.type} onChange={handleChange} />
+            )}
+          </div>
+          <Button onClick={handleSubmit}>Add Record</Button>
+        </CardContent>
+      </Card>
+
+      <Card className="mb-4 max-w-xl">
+        <CardContent>
+          <h2 className="text-xl font-semibold mb-2">Net Balance</h2>
+          <p className="text-lg">Income: ₹{totalIncome.toFixed(2)}</p>
+          <p className="text-lg">Expenses: ₹{totalExpense.toFixed(2)}</p>
+          <p className="text-lg font-bold">Net: ₹{(totalIncome - totalExpense).toFixed(2)}</p>
+        </CardContent>
+      </Card>
+
+      <Card className="max-w-xl">
+        <CardContent>
+          <h2 className="text-xl font-semibold mb-4">Records</h2>
+          <table className="w-full text-sm">
+            <thead>
+              <tr>
+                <th className="text-left">Name</th>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Category</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {records.map((r, i) => (
+                <tr key={i} className="border-t">
+                  <td>{r.name}</td>
+                  <td>{r.date}</td>
+                  <td>{r.type || "-"}</td>
+                  <td>{r.category}</td>
+                  <td>₹{r.amount.toFixed(2)}</td>
                 </tr>
-                </thead>
-                <tbody id="incomeTable"></tbody>
-            </table>
-        </div>
+              ))}
+            </tbody>
+          </table>
+        </CardContent>
+      </Card>
     </div>
-    <div class="card">
-        <div class="card-header bg-danger text-white">
-            Expense Records
-        </div>
-        <div class="card-body">
-            <table class="table table-bordered">
-                <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Date</th>
-                    <th>Type</th>
-                    <th>Amount</th>
-                </tr>
-                </thead>
-                <tbody id="expenseTable"></tbody>
-            </table>
-        </div>
-    </div>
-    <div class="card text-center">
-        <div class="card-body">
-            <h4>Net Balance: <span id="netBalance">0.00</span></h4>
-        </div>
-    </div>
-</div>
+  );
+};
 
-<script>
-    const incomeTable = document.getElementById("incomeTable");
-    const expenseTable = document.getElementById("expenseTable");
-    const netBalance = document.getElementById("netBalance");
+export default App;
 
-    let incomeList = [];
-    let expenseList = [];
-
-    document.getElementById("recordForm").addEventListener("submit", function (e) {
-        e.preventDefault();
-
-        const name = document.getElementById("name").value;
-        const date = document.getElementById("date").value;
-        const amount = parseFloat(document.getElementById("amount").value);
-        const type = document.getElementById("type").value;
-
-        if (type === "Income") {
-            incomeList.push({ name, date, amount });
-        } else {
-            expenseList.push({ name, date, type, amount });
-        }
-
-        updateTables();
-        document.getElementById("recordForm").reset();
-    });
-
-    function updateTables() {
-        incomeTable.innerHTML = "";
-        expenseTable.innerHTML = "";
-        let totalIncome = 0, totalExpense = 0;
-
-        incomeList.forEach((record) => {
-            incomeTable.innerHTML += `<tr><td>${record.name}</td><td>${record.date}</td><td>${record.amount.toFixed(2)}</td></tr>`;
-            totalIncome += record.amount;
-        });
-
-        expenseList.forEach((record) => {
-            expenseTable.innerHTML += `<tr><td>${record.name}</td><td>${record.date}</td><td>${record.type}</td><td>${record.amount.toFixed(2)}</td></tr>`;
-            totalExpense += record.amount;
-        });
-
-        netBalance.innerText = (totalIncome - totalExpense).toFixed(2);
-    }
-</script>
-</body>
-</html>
+       
+  
